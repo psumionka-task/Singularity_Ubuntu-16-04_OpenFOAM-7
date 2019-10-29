@@ -1,0 +1,57 @@
+BootStrap: library
+From: psumionka-task/default/ubuntu-16.04_core
+
+%labels
+    
+    Author Piotr Sumionka : Politechnika Gdańska, CI TASK - dział KDM [kdm.task.gda.pl]
+
+%help
+    
+    Aby uruchomić oprogramowanie OpenFOAM,
+    należy do skryptu dodać:
+    ". /opt/openfoam7/etc/bashrc"
+    ...przed wykonaniem zadania, np.:
+
+    # Uruchomienie zadania w kontenerze
+    . /opt/openfoam7/etc/bashrc
+    singularity exec <nazwa_obrazu> <polecenie>
+
+    W razie problemów, proszę o wiadomość na adres:
+    kdm@task.gda.pl
+
+%post
+    echo "Witaj wewnątrz kontenera, trwa konfiguracja środowiska..."
+    apt-get -y update
+    apt-get -y upgrade
+    #
+    ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get install -y tzdata
+    dpkg-reconfigure --frontend noninteractive tzdata
+    #
+    apt-get -y clean all
+    #
+    apt-get -y update
+    apt-get -y install gdm3
+
+    # Instalacja OpenFOAM 7
+    apt-get -y update
+    apt-get -y install gnome-panel gnome-flashback gnome-session-flashback indicator-applet-appmenu
+    #
+    sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
+    add-apt-repository http://dl.openfoam.org/ubuntu
+    apt-get -y clean all
+    apt-get -y update
+    apt-get -y install openfoam7
+    #apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y install openfoam7
+    # sed -ie '$ a \. /opt/openfoam7/etc/bashrc' /root/.bashrc
+
+    #echo '. /opt/openfoam7/etc/bashrc' >> $SINGULARITY_ENVIRONMENT
+
+%environment
+    # X11
+    TERM=xterm
+
+%runscript
+    echo "Uruchamianie zadania wewnatrz srodowiska..."
+    foamInfo simpleFoam
